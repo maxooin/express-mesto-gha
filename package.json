@@ -2,7 +2,7 @@
   "name": "express-mesto-gha",
   "version": "1.0.0",
   "type": "module",
-  "description": "Проект Mesto - разработка бэкенда",
+  "description": "Backend Mesto",
   "main": "app.js",
   "scripts": {
     "lint": "npx eslint .",
@@ -13,10 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/maxooin/express-mesto-gha.git"
   },
-  "keywords": [
-    "express",
-    "mongo"
-  ],
+  "keywords": [],
   "author": "Mikhail Kotin",
   "license": "ISC",
   "bugs": {
