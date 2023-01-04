@@ -22,7 +22,7 @@ export function createCard(req, res) {
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданны некорректные данные при создании карточки' });
+          .send({ message: `Переданны некорректные данные при создании карточки: ${Object.values(err.errors)[0].message}` });
       } else {
         res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
           .send({ message: 'Ошибка на сервере' });

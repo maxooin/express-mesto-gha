@@ -44,7 +44,7 @@ export function createUser(req, res) {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные при создании пользователя.' });
+          .send({ message: `Переданны некорректные данные при создании карточки: ${Object.values(err.errors)[0].message}` });
       } else {
         res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
           .send({ message: 'На сервере произошла ошибка.' });
