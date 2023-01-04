@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import { constants } from 'http2';
 import usersRouter from './routes/user.js';
+import cardRouter from './routes/card.js';
 
 const { PORT = 3000 } = process.env;
 
@@ -18,16 +19,16 @@ app.use((req, res, next) => {
   req.user = {
     _id: '63b4470f9f1d2866625c9a16',
   };
-
   next();
 });
 
 app.use('/users', usersRouter);
+app.use('/cards', cardRouter);
 app.all('*', (req, res) => {
   res.status(constants.HTTP_STATUS_NOT_FOUND)
     .send({ message: 'Маршрут не найден' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT || 5000, () => {
   console.log(`App listen on PORT ${PORT}`);
 });

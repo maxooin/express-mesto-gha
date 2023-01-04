@@ -10,11 +10,18 @@ export function getUsers(req, res) {
 
 export function getUserById(req, res) {
   User.findById(req.params.userId)
-    .then((user) => res.send(user))
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        res.status(constants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: `Пользователь по указанному id=${req.params.userId} не найден.` });
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: `Пользователь по указанному _id=${req.params.userId} не найден.` });
+        res.status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: `Переданы некорректные данные: id=${req.params.userId} при запросе информации о пользователе.` });
       } else {
         res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
           .send({ message: 'На сервере произошла ошибка.' });
@@ -38,6 +45,50 @@ export function createUser(req, res) {
       if (err.name === 'ValidationError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      } else {
+        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'На сервере произошла ошибка.' });
+      }
+    });
+}
+
+export function updateUserInfo(req, res) {
+  const {
+    name,
+    about,
+  } = req.body;
+  User.findByIdAndUpdate(req.params.id, {
+    name,
+    about,
+  }, {
+    new: true,
+    runValidators: true,
+  })
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Переданы некорректные данные при обновлении пользователя.' });
+      } else {
+        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'На сервере произошла ошибка.' });
+      }
+    });
+}
+
+export function updateUserAvatar(req, res) {
+  const { avatar } = req.body;
+  User.findByIdAndUpdate(req.params.id, {
+    avatar,
+  }, {
+    new: true,
+    runValidators: true,
+  })
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Переданы некорректные данные при обновлении аватара пользователя.' });
       } else {
         res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
           .send({ message: 'На сервере произошла ошибка.' });
