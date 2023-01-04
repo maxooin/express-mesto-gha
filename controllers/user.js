@@ -57,16 +57,23 @@ export function updateUserInfo(req, res) {
     name,
     about,
   } = req.body;
-  User.findByIdAndUpdate(req.params.id, {
+  User.findByIdAndUpdate(req.user._id, {
     name,
     about,
   }, {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.send(user))
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        res.status(constants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: `Пользователь c указанным _id=${req.user._id} не найден.` });
+      }
+    })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Переданы некорректные данные при обновлении пользователя.' });
       } else {
@@ -84,11 +91,18 @@ export function updateUserAvatar(req, res) {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.send(user))
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        res.status(constants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: `Пользователь c указанным _id=${req.user._id} не найден.` });
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные при обновлении аватара пользователя.' });
+          .send({ message: 'Переданы некорректные данные при обновлении аватара.' });
       } else {
         res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
           .send({ message: 'На сервере произошла ошибка.' });
