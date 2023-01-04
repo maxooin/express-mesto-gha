@@ -5,16 +5,16 @@ const cardSchema = new mongoose.Schema({
     type: String,
     minLength: [2, 'поле имя [{VALUE}] содержит менее 2 символов'],
     maxLength: [30, 'поле имя [{VALUE}] содержит более 30 символов'],
-    require: [true, 'поле имя не заполнено'],
+    required: [true, 'поле имя не заполнено'],
   },
   link: {
     type: String,
-    require: [true, 'поле ссылки на картинку не заполнено'],
+    required: [true, 'поле ссылки на картинку не заполнено'],
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
-    require: true,
+    required: true,
   },
   likes: {
     type: [{
