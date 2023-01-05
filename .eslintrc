@@ -3,7 +3,7 @@
     "airbnb-base"
   ],
   "rules": {
-    "no-console": "off",
+    "no-console": "warn",
     "no-underscore-dangle": [
       "error",
       {

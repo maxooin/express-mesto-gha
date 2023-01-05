@@ -29,6 +29,6 @@ app.all('*', (req, res) => {
     .send({ message: 'Маршрут не найден' });
 });
 
-app.listen(PORT || 5000, () => {
+app.listen(PORT, () => {
   console.log(`App listen on PORT ${PORT}`);
 });

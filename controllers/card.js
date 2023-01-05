@@ -3,6 +3,7 @@ import Card from '../models/card.js';
 
 export function getAllCards(req, res) {
   Card.find({})
+    .populate(['owner', 'likes'])
     .then((cards) => res.send(cards))
     .catch(() => res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
       .send({ message: 'На сервере произошла ошибка' }));
@@ -18,9 +19,10 @@ export function createCard(req, res) {
     link,
     owner: req.user._id,
   })
+    .then((result) => result.populate(['owner', 'likes']))
     .then((card) => res.send(card))
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: `Переданны некорректные данные при создании карточки: ${Object.values(err.errors)[0].message}` });
       } else {
@@ -32,6 +34,7 @@ export function createCard(req, res) {
 
 export function deleteCard(req, res) {
   Card.findByIdAndRemove(req.params.cardId)
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (card) {
         res.send(card);
@@ -53,6 +56,7 @@ export function deleteCard(req, res) {
 
 export function likeCard(req, res) {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (card) {
         res.send(card);
@@ -74,6 +78,7 @@ export function likeCard(req, res) {
 
 export function dislikeCard(req, res) {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (card) {
         res.send(card);
