@@ -13,7 +13,15 @@ import urlRegex from '../utils/constants.js';
 const usersRouter = Router();
 
 usersRouter.get('/', getUsers);
-usersRouter.get('/:userId', getUserById);
+usersRouter.get('/:userId', celebrate({
+  params: Joi.object()
+    .keys({
+      userId: Joi.string()
+        .required()
+        .hex()
+        .length(24),
+    }),
+}), getUserById);
 usersRouter.get('/me', getMe);
 usersRouter.patch('/me', celebrate({
   body: Joi.object()
