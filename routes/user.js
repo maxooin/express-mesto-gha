@@ -13,6 +13,9 @@ import urlRegex from '../utils/constants.js';
 const usersRouter = Router();
 
 usersRouter.get('/', getUsers);
+
+usersRouter.get('/me', getMe);
+
 usersRouter.get('/:userId', celebrate({
   params: Joi.object()
     .keys({
@@ -22,7 +25,6 @@ usersRouter.get('/:userId', celebrate({
         .length(24),
     }),
 }), getUserById);
-usersRouter.get('/me', getMe);
 usersRouter.patch('/me', celebrate({
   body: Joi.object()
     .keys({
