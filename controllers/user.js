@@ -63,7 +63,11 @@ export function createUser(req, res) {
       about,
       avatar,
     }))
-    .then((user) => res.send(user))
+    .then((user) => {
+      const userOutOfPassword = user.toObject();
+      delete userOutOfPassword.password;
+      res.send(userOutOfPassword);
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST)
