@@ -22,7 +22,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb')
     console.log(`Connection to database was failed with error ${err}`);
   });
 
-app.post('/signin', celebrate({
+app.post('/signin', login);
+app.post('/signup', celebrate({
   body: Joi.object()
     .keys({
       email: Joi.string()
@@ -40,8 +41,7 @@ app.post('/signin', celebrate({
         .regex(urlRegex)
         .uri({ scheme: ['http', 'https'] }),
     }),
-}), login);
-app.post('/signup', createUser);
+}), createUser);
 
 app.use(auth);
 app.use('/users', usersRouter);
