@@ -1,5 +1,18 @@
+import dotenv from 'dotenv';
 import { constants } from 'http2';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
+import UnauthorizedError from '../errors/UnauthorizedError.js';
+import NotFoundError from '../errors/NotFoundError.js';
+import BadRequestError from '../errors/BadRequestError.js';
+
+dotenv.config();
+
+const {
+  NODE_ENV,
+  JWT_SECRET,
+} = process.env;
 
 export function getUsers(req, res) {
   User.find({})
@@ -8,38 +21,48 @@ export function getUsers(req, res) {
       .send({ message: 'На сервере произошла ошибка.' }));
 }
 
-export function getUserById(req, res) {
-  User.findById(req.params.userId)
+function findUserById(id, res, next) {
+  User.findById(id)
     .then((user) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: `Пользователь по указанному id=${req.params.userId} не найден.` });
+        throw new NotFoundError(`Пользователь с указанным _id=${id} не найден.`);
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: `Переданы некорректные данные: id=${req.params.userId} при запросе информации о пользователе.` });
+        next(new BadRequestError(`Переданы некорректные данные: _id=${id} при запросе информации о пользователе.`));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
+        next(err);
       }
     });
 }
 
+export function getUserById(req, res, next) {
+  findUserById(req.params.userId, res, next);
+}
+
+export function getMe(req, res, next) {
+  findUserById(req.user._id, res, next);
+}
+
 export function createUser(req, res) {
   const {
+    email,
+    password,
     name,
     about,
     avatar,
   } = req.body;
-  User.create({
-    name,
-    about,
-    avatar,
-  })
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      email,
+      password: hash,
+      name,
+      about,
+      avatar,
+    }))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -105,5 +128,29 @@ export function updateUserAvatar(req, res) {
         res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
           .send({ message: 'На сервере произошла ошибка.' });
       }
+    });
+}
+
+export function login(req, res, next) {
+  const {
+    email,
+    password,
+  } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'super-strong-secret',
+        { expiresIn: '7d' },
+      );
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: true,
+      });
+      res.send({ token });
+    })
+    .catch(() => {
+      next(new UnauthorizedError('Передан неверный логин или пароль'));
     });
 }
