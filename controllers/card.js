@@ -1,5 +1,8 @@
 import { constants } from 'http2';
 import Card from '../models/card.js';
+import NotFoundError from '../errors/NotFoundError.js';
+import ForbiddenError from '../errors/ForbiddenError.js';
+import BadRequestError from '../errors/BadRequestError.js';
 
 export function getAllCards(req, res) {
   Card.find({})
@@ -32,24 +35,27 @@ export function createCard(req, res) {
     });
 }
 
-export function deleteCard(req, res) {
-  Card.findByIdAndRemove(req.params.cardId)
-    .populate(['owner', 'likes'])
+export function deleteCard(req, res, next) {
+  Card.findById(req.params.cardId)
     .then((card) => {
-      if (card) {
-        res.send(card);
+      if (!card) {
+        throw new NotFoundError('Данной карточки уже нет');
+      } else if (card.owner.toString() !== req.user._id) {
+        throw new ForbiddenError('Удаление не возможно. Вы не являетесь создателем данной карточки');
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: `Карточка по указанному id=${req.params.cardId} не найден.` });
+        Card.findByIdAndRemove(req.params.cardId)
+          .populate(['owner', 'likes'])
+          .then((result) => {
+            res.send(result);
+          })
+          .catch(next);
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: `Переданы некорректные данные: id=${req.params.cardId} для удаления карточки.` });
+        next(new BadRequestError('Переданны некорректные данные'));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
+        next(err);
       }
     });
 }

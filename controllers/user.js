@@ -6,6 +6,7 @@ import User from '../models/user.js';
 import UnauthorizedError from '../errors/UnauthorizedError.js';
 import NotFoundError from '../errors/NotFoundError.js';
 import BadRequestError from '../errors/BadRequestError.js';
+import ConflictError from '../errors/ConflictError.js';
 
 dotenv.config();
 
@@ -14,11 +15,10 @@ const {
   JWT_SECRET,
 } = process.env;
 
-export function getUsers(req, res) {
+export function getUsers(req, res, next) {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-      .send({ message: 'На сервере произошла ошибка.' }));
+    .catch((err) => next(err));
 }
 
 function findUserById(id, res, next) {
@@ -47,7 +47,7 @@ export function getMe(req, res, next) {
   findUserById(req.user._id, res, next);
 }
 
-export function createUser(req, res) {
+export function createUser(req, res, next) {
   const {
     email,
     password,
@@ -70,11 +70,11 @@ export function createUser(req, res) {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: `Переданны некорректные данные при создании карточки: ${Object.values(err.errors)[0].message}` });
+        next(new BadRequestError(`Переданы некорректные данные при создании пользователя: ${Object.values(err.errors)[0].message}`));
+      } else if (err.code === 11000) {
+        next(new ConflictError('Данный email уже занят'));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
+        next(err);
       }
     });
 }
