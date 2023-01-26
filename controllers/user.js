@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import { constants } from 'http2';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
@@ -79,7 +78,7 @@ export function createUser(req, res, next) {
     });
 }
 
-export function updateUserInfo(req, res) {
+export function updateUserInfo(req, res, next) {
   const {
     name,
     about,
@@ -95,22 +94,19 @@ export function updateUserInfo(req, res) {
       if (user) {
         res.send(user);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: `Пользователь c указанным _id=${req.user._id} не найден.` });
+        throw new NotFoundError(`Пользователь c указанным _id=${req.user._id} не найден.`);
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные при обновлении пользователя.' });
+        next(new BadRequestError(`Переданы некорректные данные при обновлении пользователя: ${Object.values(err.errors)[0].message}`));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
+        next(err);
       }
     });
 }
 
-export function updateUserAvatar(req, res) {
+export function updateUserAvatar(req, res, next) {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
@@ -120,17 +116,14 @@ export function updateUserAvatar(req, res) {
       if (user) {
         res.send(user);
       } else {
-        res.status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: `Пользователь c указанным _id=${req.user._id} не найден.` });
+        throw new NotFoundError(`Пользователь c указанным _id=${req.user._id} не найден.`);
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные при обновлении аватара.' });
+        next(new BadRequestError('Переданы некорректные данные при обновлении аватара.'));
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
+        next(err);
       }
     });
 }

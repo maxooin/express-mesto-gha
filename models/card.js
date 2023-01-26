@@ -1,15 +1,20 @@
 import mongoose from 'mongoose';
+import urlRegex from '../utils/constants.js';
 
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
-    minLength: [2, 'поле имя [{VALUE}] содержит менее 2 символов'],
-    maxLength: [30, 'поле имя [{VALUE}] содержит более 30 символов'],
-    required: [true, 'поле имя не заполнено'],
+    minLength: [2, 'Поле имя [{VALUE}] содержит менее 2 символов'],
+    maxLength: [30, 'Поле имя [{VALUE}] содержит более 30 символов'],
+    required: [true, 'Поле имя не заполнено'],
   },
   link: {
     type: String,
-    required: [true, 'поле ссылки на картинку не заполнено'],
+    required: [true, 'Поле ссылки на картинку не заполнено'],
+    validate: {
+      validator: (url) => urlRegex.test(url),
+      message: 'В поле ссылка на картинку [{VALUE}] не является ссылке',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

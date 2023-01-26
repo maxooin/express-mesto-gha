@@ -7,7 +7,7 @@ function centralizedError(err, req, res, next) {
   } = err;
   if (!statusCode) {
     statusCode = constants.HTTP_STATUS_INTERNAL_SERVER_ERROR;
-    message = 'На сервере произошла необработанная нами ушипка.';
+    message = 'На сервере произошла ошибка';
   }
   res.status(statusCode)
     .send({ message });

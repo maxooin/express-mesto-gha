@@ -21,14 +21,14 @@ const userSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    minlength: [2, 'поле имя `{VALUE}` содержит менее 2 символов'],
-    maxlength: [30, 'поле имя `{VALUE}` содержит более 30 символов'],
+    minlength: [2, 'Поле имя `{VALUE}` содержит менее 2 символов'],
+    maxlength: [30, 'Поле имя `{VALUE}` содержит более 30 символов'],
     default: 'Жак-Ив Кусто',
   },
   about: {
     type: String,
-    minlength: [2, 'поле о пользователе `{VALUE}` содержит менее 2 символов'],
-    maxlength: [30, 'поле о пользователе `{VALUE}` содержит более 30 символов'],
+    minlength: [2, 'Поле о пользователе `{VALUE}` содержит менее 2 символов'],
+    maxlength: [30, 'Поле о пользователе `{VALUE}` содержит более 30 символов'],
     default: 'Исследователь',
   },
   avatar: {
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
       validator: (url) => urlRegex.test(url),
-      message: 'поле ссылка на аватарку `{VALUE}` не прошло валидирование',
+      message: 'В поле ссылка на аватарку `{VALUE}` не является ссылкой',
     },
   },
 });
