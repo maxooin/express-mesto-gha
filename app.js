@@ -10,6 +10,7 @@ import auth from './middlewares/auth.js';
 import NotFoundError from './errors/NotFoundError.js';
 import centralizedError from './middlewares/centralizedError.js';
 import urlRegex from './utils/constants.js';
+import { errorLogger, requestLogger } from './middlewares/logger.js';
 
 const { PORT = 3000 } = process.env;
 
@@ -21,6 +22,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb')
   .catch((err) => {
     console.log(`Connection to database was failed with error ${err}`);
   });
+
+app.use(requestLogger);
 
 app.post('/signin', celebrate({
   body: Joi.object()
@@ -59,6 +62,8 @@ app.use('/cards', cardRouter);
 app.all('*', (req, res, next) => {
   next(new NotFoundError('Маршрут не найден'));
 });
+
+app.use(errorLogger);
 
 app.use(errors());
 
